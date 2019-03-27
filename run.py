@@ -40,7 +40,7 @@ def main(argv):
         ls.append(Candidate(x,x))
     
     result = schedule(lst,n,k,ls)
-    
+    print(result)
     for item in ls:
         for x,y in result:
             if x == item.id:
@@ -48,12 +48,9 @@ def main(argv):
             if y == item.id:
                 item.lst.append(x)
     
-    #maxMin(result)
-    for x in ls:
-        print(x)
+    
 
-    goal = []
-    print(result)
+    
     # for i in range(1,n+1):
     #     for x in result:
     #         if x[0] == i:
@@ -62,6 +59,10 @@ def main(argv):
     #     print(x)
         
     # write output
+    print("-----------------------------------")
+    for x in ls:
+        print(x)
+    #print(result)
     print("-----------------------------------")
     print("The total number of batles: {}".format(len(result)))
     print("-----------------------------------")
@@ -154,7 +155,7 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
             for x in resul:
                goalstate.append(x)
             return goalstate
-        #-------k > n/2 ----------------------------
+        #-------k > n/2 ------------------------pass----
         elif (n < 2*k and k != n - 1):
             #print(lst)
             first, second = [], []
@@ -203,25 +204,71 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
 
         
         #---------k < n/2-------------------------------------
-        elif (n > 2*k and k != 1 and k != 2):
+        elif (n > 2*k and n%2 == 0 and k != 1 and k != 2):
             # idea : divice it into two part : k+1 | n-k-1  --> best choice
-            temp =[]
+            first =[]
             for x in range(0,k+1):
-                temp.append(lst[0])
+                first.append(lst[0])
                 lst.pop(0)
-            #print("{}-{}".format(temp,lst))
-            temp = schedule(temp,len(temp),k,ls)
-            for x in temp:
-                goalstate.append(x)
-            temp = schedule(lst,len(lst),k,ls)
-            for x in temp:
-                goalstate.append(x)
+            second = lst         #change name to easily understand
+            #-----cmt--------
+            # print("---")
+            # print("{}-{}".format(first,findmaxmin(first,k)))
+            # print("{}-{}".format(second,findmaxmin(second,k)))
+            # print("---")
+            #-------------
+            #optimize (max,min) when comparing 2 list
+            i = 0
+            while(sum(first[0:k]) < sum(second[0:k])):
+                first[i], second[i] = second[i], first[i]
+                i += 1
+
+            i = k-1
+            first.sort()
+            second.sort()
+            first = first[::-1]
+            second = second[::-1]
+            
+            while((sum(first[0:k]) < sum(second[0:k])) and i >= 0):
+                first[i], second[i] = second[i], first[i]
+                i -= 1
+            first.sort()
+            second.sort()
+            
+            first = schedule(first,len(first),k,ls)
+            goalstate += first
+            second = schedule(second,len(second),k,ls)
+            goalstate += second
             return goalstate
-        
+
+        elif (n > 2*k and n%2 != 0 and k != 1 and k != 2):
+            a = lst.pop(0)
+            first, second = [], []
+            for _ in range(0, (n-1)/2):
+                first.append(lst[0])
+                lst.pop(0)
+            second = lst
+
+            
+            # Schedule for list by role
+            temp = list([(a,x) for x in first])
+            goalstate += temp
+            temp = list(zip(first,second))
+            goalstate += temp
+            
+            first = schedule(first,len(first),k-2,ls)
+            goalstate += first
+            second = schedule(second,len(second),k-1,ls)
+            goalstate += second
+            return goalstate
         
     return goalstate
 
 #------------------------------------------------------------------------------------------
+def findmaxmin(lst,k):
+    lst.sort()
+    return sum(lst[0:k]) , sum(lst[::-1][0:k])
+
 
 def check2k(ls , lst):
     print(lst)
