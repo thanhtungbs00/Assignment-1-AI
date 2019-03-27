@@ -40,23 +40,13 @@ def main(argv):
         ls.append(Candidate(x,x))
     
     result = schedule(lst,n,k,ls)
-    print(result)
+    #print(result)
     for item in ls:
         for x,y in result:
             if x == item.id:
                 item.lst.append(y)
             if y == item.id:
                 item.lst.append(x)
-    
-    
-
-    
-    # for i in range(1,n+1):
-    #     for x in result:
-    #         if x[0] == i:
-    #             goal.append(x)
-    # for x in goal:
-    #     print(x)
         
     # write output
     print("-----------------------------------")
@@ -69,12 +59,6 @@ def main(argv):
     print("The number of candidates: {}".format(n))
     print("The battle of each contestant: {}".format(k))
     print("-----------------------------------")
-    
-    '''
-    for x in lst:
-        print(x)
-        print(x.getlst())
-    '''
 
 #------------------------------------------------------------------------------------------
 def schedule(lst, n, k, ls):               #lst : list of candidates
@@ -96,7 +80,7 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
         #---------k = 2----------------------pass
         elif (k == 2): 
             left, right = 0, len(lst)-1
-            print(lst)
+            #print(lst)
             while left <= right:
                 if right == left + 1:
                     lst[left], lst[right] = lst[right], lst[left]
@@ -107,7 +91,7 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                 right -= 2
                 #check2k(ls, lst)
             #create each couple of contestant
-            print(lst)
+            #print(lst)
             temp=[]
             for item in lst[1:n]:
                 temp.append(item)
@@ -203,7 +187,7 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
             n = len(second)
 
         
-        #---------k < n/2-------------------------------------
+        #---------k < n/2----------------------k is even-------------
         elif (n > 2*k and n%2 == 0 and k != 1 and k != 2):
             # idea : divice it into two part : k+1 | n-k-1  --> best choice
             first =[]
@@ -241,15 +225,24 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
             goalstate += second
             return goalstate
 
+        #---------k < n/2----------------------k is odd-------------
         elif (n > 2*k and n%2 != 0 and k != 1 and k != 2):
-            a = lst.pop(0)
+            a = lst.pop(n/2)
             first, second = [], []
             for _ in range(0, (n-1)/2):
                 first.append(lst[0])
                 lst.pop(0)
             second = lst
-
+            i = len(first) - 1
+            while (sum(first) < sum(second)) and i >= 0 :
+                first[i], second[i] = second[i], first[i]
+                i -= 1
             
+            second.sort()
+            # first = [1,2,8,9]
+            # second = [3,4,6,7]
+            # a = 5
+
             # Schedule for list by role
             temp = list([(a,x) for x in first])
             goalstate += temp
@@ -289,14 +282,6 @@ def check2k(ls , lst):
         print(x)
         x.reset()
     print("---------------")
-
-
-def lookup(id,lst,func):
-    #lookup(sym.name.lower(), env, lambda x: x.name.lower()):
-        for x in lst:
-            if id == func(x):
-                return x
-        return None
 
 def readFile(file_input):
     if not os.path.isfile(file_input):
@@ -342,36 +327,6 @@ def generatetest(file_input):
     for x in range(8):
         lst.append(str(random.randrange(50)))
     writeFile(file_input,lst)
-
-def partition(arr,low,high): 
-    i = ( low-1 )         # index of smaller element 
-    pivot = arr[high]     # pivot 
-  
-    for j in range(low , high): 
-  
-        # If current element is smaller than or 
-        # equal to pivot 
-        if   arr[j] <= pivot: 
-          
-            # increment index of smaller element 
-            i = i+1 
-            arr[i],arr[j] = arr[j],arr[i] 
-  
-    arr[i+1],arr[high] = arr[high],arr[i+1] 
-    return ( i+1 ) 
-
-# Function to do Quick sort 
-def quickSort(arr,low,high): 
-    if low < high: 
-  
-        # pi is partitioning index, arr[p] is now 
-        # at right place 
-        pi = partition(arr,low,high) 
-  
-        # Separately sort elements before 
-        # partition and after partition 
-        quickSort(arr, low, pi-1) 
-        quickSort(arr, pi+1, high)
 
 
 if __name__ == "__main__":
