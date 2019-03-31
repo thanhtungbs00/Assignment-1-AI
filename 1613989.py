@@ -8,50 +8,72 @@ class Candidate:
         self.lst = list()
 
     def __str__(self):
-        return str(self.id) + "-" + ":".join(str(x) for x in self.lst) + "-" +str(sum(self.lst))
+        return str(self.id) + "-" + ":".join(str(x) for x in self.lst) + "-" + str(self.score) 
 
     def getlst(self):
         return len(self.lst)
     
     def addlst(self, value):
         self.lst.append(value)
+
     def reset(self):
         self.lst = []
 
+    def getScoreAverage(self, ls):
+        scoretb = 0
+        for x in self.lst:
+            scoretb += ls[x-1].score
+        print(str(self.id) + "-" + ":".join(str(x) for x in self.lst) + "-" + str(self.score) + "-" +str(scoretb))
+        
+    
+def getscore(ls):
+    return ls.score
+
+def getid(ls):
+    return ls.id
+
 #def main(file_input, file_output):
 def main(argv):
+    file_input = "input.txt"
+    file_output = "output.txt"
     # read input
     # generatetest(file_input)
-    lst = []
     ls = []
-    #n, k, lst = readFile(file_input)
-    n=int(argv[0])
-    k=int(argv[1])
+    if argv ==[]:
+        n, k, ls = readFile(file_input)
+    else:
+        n=int(argv[0])
+        k=int(argv[1])
+        for x in range(1,n+1):
+            _a = random.randint(1,90)
+            _b = random.randint(_a,90)
+            a = int(random.randint(_a,_b))
+            ls.append(Candidate(x,a))
     
     if (n*k % 2 != 0 or k >= n or k < 1 ):
         print("Can not schedule for contestants because number of battle is invalid")
         sys.exit()
     # run algorithm
-
-    for x in range(1,n+1):
+    lst = []
+    for x in range(0,n):
         lst.append(x)
     #print(lst)
-    for x in range(1,n+1):
-        ls.append(Candidate(x,x))
+
+    ls.sort(key=getscore)
     
     result = schedule(lst,n,k,ls)
     #print(result)
-    for item in ls:
-        for x,y in result:
-            if x == item.id:
-                item.lst.append(y)
-            if y == item.id:
-                item.lst.append(x)
-        
+    
+    for x,y in result:
+        ls[x].lst.append(ls[y].id)
+        ls[y].lst.append(ls[x].id)
+    ls.sort(key=getid)
     # write output
     print("-----------------------------------")
     for x in ls:
-        print(x)
+        x.getScoreAverage(ls)
+    writeFile(file_output, ls)
+
     #print(result)
     print("-----------------------------------")
     print("The total number of batles: {}".format(len(result)))
@@ -110,6 +132,10 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                 else:
                     second.append(lst[i])
             # optimize sum of 2 list ~~
+            print("-Initial state-")
+            print(first)
+            print(second)
+            print("-Goal State-")
             left, right = 0, len(second)-1
             pivot = math.ceil(((sum(second) - sum(first))/2) + 0.1)
             while right > 0:
@@ -122,6 +148,8 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                     left += 1
                 right -= 1
             # zip 2 list 
+            print(first)
+            print(second)
             temp = [(x,y) for x in first for y in second]
             for x in temp:
                 goalstate.append(x)
@@ -149,15 +177,18 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                 first.append(lst[i])
             for i in range(splitpoint, n):
                 second.append(lst[i])
-            
+            print("-Initial state-")
+            print(first)
+            print(second)
+            print("-Goal State-")
             # total list first and k2 element of second_list
             sum_first = sum(first)
             sum_second = 0 # sum of k element of second_list. Not is total of second_list
             for x in range(-k_2,0):
                 sum_second += second[x]
             
-            # print(first)
-            # print(second)
+            print(first)
+            print(second)
             end_second = k - 1
             end_first = splitpoint -1
             while (sum(second) > (sum_second + sum_first)):
@@ -195,6 +226,10 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                 first.append(lst[0])
                 lst.pop(0)
             second = lst         #change name to easily understand
+            print("-Initial state-")
+            print(first)
+            print(second)
+            print("-Goal State-")
             #-----cmt--------
             # print("---")
             # print("{}-{}".format(first,findmaxmin(first,k)))
@@ -218,7 +253,8 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
                 i -= 1
             first.sort()
             second.sort()
-            
+            print(first)
+            print(second)
             first = schedule(first,len(first),k,ls)
             goalstate += first
             second = schedule(second,len(second),k,ls)
@@ -227,12 +263,16 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
 
         #---------k < n/2----------------------k is odd-------------
         elif (n > 2*k and n%2 != 0 and k != 1 and k != 2):
-            a = lst.pop(n/2)
+            a = lst.pop(int(n/2))
             first, second = [], []
-            for _ in range(0, (n-1)/2):
+            for _ in range(0, int((n-1)/2)):
                 first.append(lst[0])
                 lst.pop(0)
             second = lst
+            print("-Initial state-")
+            print(first)
+            print(second)
+            print("-Goal State-")
             i = len(first) - 1
             while (sum(first) < sum(second)) and i >= 0 :
                 first[i], second[i] = second[i], first[i]
@@ -248,7 +288,8 @@ def schedule(lst, n, k, ls):               #lst : list of candidates
             goalstate += temp
             temp = list(zip(first,second))
             goalstate += temp
-            
+            print(first)
+            print(second)
             first = schedule(first,len(first),k-2,ls)
             goalstate += first
             second = schedule(second,len(second),k-1,ls)
@@ -287,7 +328,7 @@ def readFile(file_input):
     if not os.path.isfile(file_input):
        print("File path {} does not exist. Exiting...".format(file_input))
        sys.exit()
-    list =[]
+    lst =[]
     try:
         with open(file_input,"r") as f:
             line = f.readline()
@@ -296,9 +337,9 @@ def readFile(file_input):
             i = 1
             while i <= n:
                 line = f.readline()
-                list.append(Candidate(i, str(line), []))
+                lst.append(Candidate(i, int(line)))
                 i += 1
-        return n, k, list
+        return n, k, lst
     except IOError as x:
         if x.errno == errno.ENOENT:
             print('{}- does not exist'.format(file_input))
@@ -315,18 +356,21 @@ def writeFile(file_output, data):
     if os.path.isfile(file_output):
         os.remove(file_output)
     
-    with open(file_output,"w") as fw:
+    with open(file_output,"a") as fw:
         if isinstance(data,list):
-            fw.write("\n".join(str(x) for x in data))
+            if(isinstance(data[0], Candidate)):
+                a = 1
+                for x in data:
+                    if a == 1:
+                        fw.write("\n".join(str(i) for i in x.lst))
+                    else:
+                        fw.write("\n" + "\n".join(str(i) for i in x.lst))
+                    a = 0
+            else:
+                fw.write("\n".join(str(x) for x in data) +"\n")
         else:
-            fw.write(str(data))
+            fw.write(str(data)+"\n")
         fw.close()
-    
-def generatetest(file_input):
-    lst=[]
-    for x in range(8):
-        lst.append(str(random.randrange(50)))
-    writeFile(file_input,lst)
 
 
 if __name__ == "__main__":
@@ -335,12 +379,4 @@ if __name__ == "__main__":
     main(sys.argv[1:])
     end_time = time.time()
     print ('total run-time: %f ms' % ((end_time - start_time) * 1000))
-    '''
-    # Driver code to test above 
-    arr = [10, 7, 8, 9, 1, 5] 
-    n = len(arr) 
-    quickSort(arr,0,n-1) 
-    print ("Sorted array is:") 
-    for i in range(n): 
-        print ("%d" %arr[i]), 
-    '''
+    
